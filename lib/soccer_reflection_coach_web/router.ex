@@ -18,6 +18,7 @@ defmodule SoccerReflectionCoachWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    live "/coach", CoachLive, :index
   end
 
   # Other scopes may use custom stacks.
