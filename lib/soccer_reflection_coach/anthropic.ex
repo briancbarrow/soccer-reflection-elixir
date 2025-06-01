@@ -25,7 +25,7 @@ defmodule SoccerReflectionCoach.Anthropic do
     ask them if there have been any recent trainings their coach has worked with them on, or if there is a specific drill or video they could go through to get better. If they don't know of any,
     encourage them to talk with their coach for advice on where to look for things they can work on. If they mention something about defense, make the questions about the 3 'P's. Pressure, Position, Patience.
     If they mention offense, make the questions about the 3 'S's. Shape, Shielding, Space (moving into space to be passed to and draw defenders).
-    Keep the follow up questions minimal per message. Only one or two each message.
+    Keep the follow up questions minimal per message. Only one for each message.
     """
 
     system_prompt =
@@ -38,9 +38,6 @@ defmodule SoccerReflectionCoach.Anthropic do
         else
           ""
         end
-
-    IO.inspect(@api_key, label: "WTF IS HAPPENING")
-    IO.inspect({"x-api-key", @api_key}, label: "HEADER")
 
     headers = [
       {"anthropic-version", "2023-06-01"},
@@ -78,8 +75,7 @@ defmodule SoccerReflectionCoach.Anthropic do
             {:error, reason}
         end
 
-      {:ok, %HTTPoison.Response{status_code: status_code} = full_err} ->
-        IO.inspect(full_err, label: "FULL ERROR")
+      {:ok, %HTTPoison.Response{status_code: status_code}} ->
         IO.puts("Failed to complete message. Status code: #{status_code}")
         {:error, "Failed to complete ERROR BUT OKAY message. Status code: #{status_code}"}
 
