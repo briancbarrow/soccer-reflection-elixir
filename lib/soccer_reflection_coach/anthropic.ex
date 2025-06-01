@@ -75,7 +75,8 @@ defmodule SoccerReflectionCoach.Anthropic do
             {:error, reason}
         end
 
-      {:ok, %HTTPoison.Response{status_code: status_code}} ->
+      {:ok, %HTTPoison.Response{status_code: status_code} = full_err} ->
+        IO.inspect(full_err, label: "FULL ERROR")
         IO.puts("Failed to complete message. Status code: #{status_code}")
         {:error, "Failed to complete ERROR BUT OKAY message. Status code: #{status_code}"}
 
