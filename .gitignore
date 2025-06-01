@@ -35,3 +35,4 @@ soccer_reflection_coach-*.tar
 npm-debug.log
 /assets/node_modules/
 
+.envrc

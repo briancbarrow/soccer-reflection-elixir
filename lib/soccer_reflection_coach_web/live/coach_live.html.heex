@@ -17,10 +17,10 @@
       </div>
     <% else %>
       <div>
-        <%= for message <- @messages do %>
+        <%= for message <- Enum.reverse(@messages) do %>
           <div class={(message.role == :user && "text-right") || "text-left"}>
             <div class={[
-              "inline-block rounded-lg p-2 my-1 max-w-xs",
+              "inline-block rounded-lg p-2 my-1 max-w-lg",
               (message.role == :user && "bg-blue-500 text-white") || "bg-gray-300"
             ]}>
               {message.content}
