@@ -28,6 +28,23 @@ defmodule SoccerReflectionCoachWeb.CoachLive do
   end
 
   @impl true
+  def handle_event("start_conversation", _params, socket) do
+    first_message = %Message{
+      role: :user,
+      content: "I am ready to talk about the game today",
+      created_at: DateTime.utc_now()
+    }
+
+    send(self(), {:get_ai_response, [first_message]})
+
+    {:noreply,
+     socket
+     |> assign(:messages, [])
+     |> assign(:current_message, "")
+     |> assign(:is_loading, true)}
+  end
+
+  @impl true
   def handle_event("update_message", %{"message" => message}, socket) do
     {:noreply, assign(socket, current_message: message)}
   end
