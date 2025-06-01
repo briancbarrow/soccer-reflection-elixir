@@ -5,7 +5,6 @@ defmodule SoccerReflectionCoach.Anthropic do
   alias SoccerReflectionCoach.Message
 
   @api_base "https://api.anthropic.com/v1"
-  @api_key System.get_env("ANTHROPIC_API_KEY")
 
   @doc """
   Sends a message to the Anthropic API and returns the response.
@@ -41,7 +40,7 @@ defmodule SoccerReflectionCoach.Anthropic do
 
     headers = [
       {"anthropic-version", "2023-06-01"},
-      {"x-api-key", @api_key},
+      {"x-api-key", System.get_env("ANTHROPIC_API_KEY")},
       {"Content-Type", "application/json"}
     ]
 
