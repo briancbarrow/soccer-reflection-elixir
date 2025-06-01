@@ -39,6 +39,9 @@ defmodule SoccerReflectionCoach.Anthropic do
           ""
         end
 
+    IO.inspect(@api_key, label: "WTF IS HAPPENING")
+    IO.inspect({"x-api-key", @api_key}, label: "HEADER")
+
     headers = [
       {"anthropic-version", "2023-06-01"},
       {"x-api-key", @api_key},
