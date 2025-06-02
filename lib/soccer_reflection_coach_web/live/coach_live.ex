@@ -102,10 +102,11 @@ defmodule SoccerReflectionCoachWeb.CoachLive do
     end
   end
 
-  defp get_placeholder(recording, transcribing) do
+  defp get_placeholder(recording, transcribing, message_length) do
     cond do
       recording -> "Recording... Speak clearly"
       transcribing -> "Transcribing your message..."
+      message_length == 0 -> "Click the button above to start"
       true -> "Type your reflection here..."
     end
   end
