@@ -5,7 +5,15 @@ defmodule SoccerReflectionCoachWeb.CoachLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, messages: [], current_message: "", is_loading: false, error: "")}
+    {:ok,
+     assign(socket,
+       messages: [],
+       current_message: "",
+       is_loading: false,
+       error: "",
+       recording: false,
+       transcribing: false
+     )}
   end
 
   @impl true
@@ -50,6 +58,32 @@ defmodule SoccerReflectionCoachWeb.CoachLive do
   end
 
   @impl true
+  def handle_event("recording_started", _parms, socket) do
+    {:noreply, assign(socket, recording: true)}
+  end
+
+  @impl true
+  def handle_event("recording_stopped", _params, socket) do
+    {:noreply, assign(socket, recording: false, transcribing: true)}
+  end
+
+  @impl true
+  def handle_event("transcription_loading", _params, socket) do
+    {:noreply, assign(socket, transcribing: true)}
+  end
+
+  @impl true
+  def handle_event("transcription_result", %{"text" => text}, socket) do
+    IO.inspect(text, label: "TRANS RESULTS")
+    {:noreply, assign(socket, current_message: text, transcribing: false)}
+  end
+
+  @impl true
+  def handle_event("transcription_error", _params, socket) do
+    {:noreply, assign(socket, transcribing: false)}
+  end
+
+  @impl true
   def handle_info({:get_ai_response, messages}, socket) do
     ai_response = Anthropic.call_messages_api(messages)
 
@@ -65,6 +99,14 @@ defmodule SoccerReflectionCoachWeb.CoachLive do
          socket
          |> assign(:error, error_message)
          |> assign(:is_loading, false)}
+    end
+  end
+
+  defp get_placeholder(recording, transcribing) do
+    cond do
+      recording -> "Recording... Speak clearly"
+      transcribing -> "Transcribing your message..."
+      true -> "Type your reflection here..."
     end
   end
 end

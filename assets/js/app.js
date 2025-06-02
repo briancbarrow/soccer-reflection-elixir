@@ -63,11 +63,131 @@ Hooks.SubmitOnEnter = {
       // Only submit if there's content
       if (this.el.value.trim() !== "") {
         form.dispatchEvent(
-          new Event("submit", { bubbles: true, cancelable: true }),
+          new Event("submit", { bubbles: true, cancelable: true })
         );
       }
     }
   },
+};
+
+Hooks.VoiceRecorder = {
+  mounted() {
+    this.recording = false;
+    this.mediaRecorder = null;
+    this.audioChunks = [];
+
+    this.el.addEventListener("click", () => {
+      if (this.recording) {
+        this.stopRecording();
+      } else {
+        this.startRecording();
+      }
+    });
+  },
+
+  async startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm;codecs=opus",
+      });
+      this.audioChunks = [];
+
+      this.mediaRecorder.addEventListener("dataavailable", (event) => {
+        if (event.data.size > 0) {
+          this.audioChunks.push(event.data);
+        }
+      });
+
+      this.mediaRecorder.addEventListener("stop", () => {
+        this.processAudio();
+      });
+
+      this.mediaRecorder.start();
+      this.recording = true;
+
+      // Push event to LiveView to update UI state
+      this.pushEvent("recording_started", {});
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      alert("Could not access your microphone. Please check permissions.");
+    }
+  },
+
+  stopRecording() {
+    if (this.mediaRecorder && this.recording) {
+      this.mediaRecorder.stop();
+      this.mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+      this.recording = false;
+
+      // Push event to LiveView to update UI state
+      this.pushEvent("recording_stopped", {});
+    }
+  },
+
+  async processAudio() {
+    const audioBlob = new Blob(this.audioChunks, {
+      type: "audio/webm;codecs=opus",
+    });
+
+    this.lastRecordedAudio = audioBlob;
+
+    // Add a debug download (optional - remove in production)
+    // this.downloadAudio();
+
+    // Show loading state
+    this.pushEvent("transcription_loading", {});
+
+    try {
+      // Create FormData to send to server
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "recording.webm");
+
+      // Send to server for Deepgram processing
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Transcription failed");
+      }
+
+      const result = await response.json();
+
+      // Update the textarea with transcription
+      this.pushEvent("transcription_result", { text: result.text });
+    } catch (err) {
+      console.error("Error transcribing audio:", err);
+      this.pushEvent("transcription_error", { error: err.message });
+    }
+  },
+
+  //   downloadAudio() {
+  //     if (!this.lastRecordedAudio) {
+  //       console.warn("No audio recording available to download");
+  //       return;
+  //     }
+
+  //     // Create a URL for the blob
+  //     const audioUrl = URL.createObjectURL(this.lastRecordedAudio);
+
+  //     // Create a timestamp for the filename
+  //     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+
+  //     // Create a download link
+  //     const downloadLink = document.createElement("a");
+  //     downloadLink.href = audioUrl;
+  //     downloadLink.download = `recording-${timestamp}.webm`;
+
+  //     // Append to the document, click it, and remove it
+  //     document.body.appendChild(downloadLink);
+  //     downloadLink.click();
+  //     document.body.removeChild(downloadLink);
+
+  //     // Clean up the URL object
+  //     setTimeout(() => URL.revokeObjectURL(audioUrl), 100);
+  //   },
 };
 
 const csrfToken = document
@@ -127,10 +247,10 @@ if (process.env.NODE_ENV === "development") {
             reloader.openEditorAtDef(e.target);
           }
         },
-        true,
+        true
       );
 
       window.liveReloader = reloader;
-    },
+    }
   );
 }

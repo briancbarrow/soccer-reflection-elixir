@@ -22,9 +22,10 @@ defmodule SoccerReflectionCoachWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", SoccerReflectionCoachWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", SoccerReflectionCoachWeb do
+    pipe_through :api
+    post "/transcribe", TranscriptionController, :create
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:soccer_reflection_coach, :dev_routes) do
